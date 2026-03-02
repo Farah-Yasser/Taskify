@@ -51,11 +51,8 @@ class RegisteredUserController extends Controller
         ]);
 
         Mail::to($user->email)->send(new VerificationCodeMail($code));
-
-        event(new Registered($user));
-
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('verification.code.form')->with('success', 'We sent you a verification code.');
     }
 }

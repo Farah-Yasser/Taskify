@@ -27,6 +27,25 @@
                 </header>
             @endisset
 
+            <!-- Flash Messages -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                @if($message = Session::get('success'))
+                    <x-alert type="success" message="{{ $message }}" />
+                @endif
+
+                @if($message = Session::get('error'))
+                    <x-alert type="error" message="{{ $message }}" />
+                @endif
+
+                @if($message = Session::get('warning'))
+                    <x-alert type="warning" message="{{ $message }}" />
+                @endif
+
+                @if($message = Session::get('info'))
+                    <x-alert type="info" message="{{ $message }}" />
+                @endif
+            </div>
+
             <!-- Page Content -->
             <main>
                 {{ $slot }}

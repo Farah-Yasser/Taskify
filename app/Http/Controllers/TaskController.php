@@ -10,10 +10,29 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tasks= Task::where('user_id', auth('web')->id())->get();
-        return view('tasks.tasks', compact('tasks'));
+        $query = Task::where('user_id', auth('web')->id());
+        
+        // Filter by status
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+        
+        // Sort by
+        $sortBy = $request->get('sort', 'created_at');
+        $sortOrder = $request->get('order', 'desc');
+        
+        if (in_array($sortBy, ['created_at', 'title', 'status'])) {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+        
+        $tasks = $query->get();
+        $status = $request->get('status', '');
+        $sort = $request->get('sort', 'created_at');
+        $order = $request->get('order', 'desc');
+        
+        return view('tasks.tasks', compact('tasks', 'status', 'sort', 'order'));
     }
 
     /**
