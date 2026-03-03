@@ -15,7 +15,7 @@ function createTaskFor(User $user): Task
     return $task;
 }
 
-test('user cannot edit another users task', function () {
+test('user cannot edit another user\'s task', function () {
     $owner = User::factory()->create();
     $intruder = User::factory()->create();
     $task = createTaskFor($owner);
@@ -25,7 +25,7 @@ test('user cannot edit another users task', function () {
     $response->assertNotFound();
 });
 
-test('user cannot update another users task', function () {
+test('user cannot update another user\'s task', function () {
     $owner = User::factory()->create();
     $intruder = User::factory()->create();
     $task = createTaskFor($owner);
@@ -40,7 +40,7 @@ test('user cannot update another users task', function () {
     $this->assertSame('Sample Task', $task->fresh()->title);
 });
 
-test('user cannot delete another users task', function () {
+test('user cannot delete another user\'s task', function () {
     $owner = User::factory()->create();
     $intruder = User::factory()->create();
     $task = createTaskFor($owner);

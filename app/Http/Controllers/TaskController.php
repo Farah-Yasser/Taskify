@@ -17,7 +17,7 @@ class TaskController extends Controller
         $status = $request->get('status', '');
         if ($status !== '' && in_array($status, ['pending', 'in_progress', 'completed'], true)) {
             $query->where('status', $status);
-        } else {
+        } elseif ($status !== '') {
             $status = '';
         }
 
