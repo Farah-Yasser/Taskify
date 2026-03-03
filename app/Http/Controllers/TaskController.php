@@ -13,25 +13,26 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $query = Task::where('user_id', auth('web')->id());
-        
-        // Filter by status
-        if ($request->has('status') && $request->status !== '') {
-            $query->where('status', $request->status);
-        }
-        
-        // Sort by
-        $sortBy = $request->get('sort', 'created_at');
-        $sortOrder = $request->get('order', 'desc');
-        
-        if (in_array($sortBy, ['created_at', 'title', 'status'])) {
-            $query->orderBy($sortBy, $sortOrder);
-        }
-        
-        $tasks = $query->get();
+
         $status = $request->get('status', '');
+        if ($status !== '' && in_array($status, ['pending', 'in_progress', 'completed'], true)) {
+            $query->where('status', $status);
+        } else {
+            $status = '';
+        }
+
         $sort = $request->get('sort', 'created_at');
-        $order = $request->get('order', 'desc');
-        
+        if (! in_array($sort, ['created_at', 'title', 'status'], true)) {
+            $sort = 'created_at';
+        }
+
+        $order = strtolower($request->get('order', 'desc'));
+        if (! in_array($order, ['asc', 'desc'], true)) {
+            $order = 'desc';
+        }
+
+        $tasks = $query->orderBy($sort, $order)->get();
+
         return view('tasks.tasks', compact('tasks', 'status', 'sort', 'order'));
     }
 
@@ -77,6 +78,8 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
+        $this->ensureTaskOwner($task);
+
         return view('tasks.edit', compact('task'));
     }
 
@@ -85,15 +88,15 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        $request->validate([
+        $this->ensureTaskOwner($task);
+
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:pending,in_progress,completed',
         ]);
 
-        $task->title = $request->title;
-        $task->description = $request->description;
-        $task->status = $request->status;
+        $task->fill($validated);
         $task->save();
 
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
@@ -104,7 +107,16 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
+        $this->ensureTaskOwner($task);
+
         $task->delete();
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
+    }
+
+    private function ensureTaskOwner(Task $task): void
+    {
+        if ($task->user_id !== auth('web')->id()) {
+            abort(404);
+        }
     }
 }
